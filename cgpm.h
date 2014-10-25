@@ -23,12 +23,18 @@ static const int nullptr = 0;
 
 static const char *cgpm_table_path = "cgpu_record.tbl";
 
-typedef struct CGPM_RECORD {
-  char name[MAX_NAME_LEN];
+typedef struct CGPM_ELEMENT {
+  int ident;
   int isTryCpu;
   int isTryGpu;
   int cpuVal;
   int gpuVal;
+};
+
+typedef struct CGPM_RECORD {
+  char name[MAX_NAME_LEN];
+  int elemCnt;
+  CGPM_ELEMENT *elem;
 } CGPM_RECORD;
 
 typedef struct CGPM {
@@ -48,7 +54,10 @@ void cgpm_close();
 void cgpm_create_records();
 void cgpm_load_records();
 void cgpm_store_records();
+
 void cgpm_alloc_records(int size);
+void cgpm_alloc_elements(CGPM_RECORD *record);
+
 void cgpm_realloc_records();
 
 CGPM_RECORD *cgpm_add_record(char *task);

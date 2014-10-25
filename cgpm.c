@@ -35,7 +35,7 @@ void cgpm_create_records()
 
 void cgpm_load_records()
 {
-  int i;
+  int i,j;
   int recordCnt;
   
   fscanf(cgpm->fp,"%d ",&cgpm->recordCnt);
@@ -47,13 +47,19 @@ void cgpm_load_records()
   {
     CGPM_RECORD *tmp = &cgpm->records[i];
     fgets(cgpm->fp,MAX_NAME_LEN,tmp->name);
-    fscanf(cgpm->fp," %d %d %d %d",&tmp->isTryCpu,&tmp->isTryGpu,&tmp->cpuVal,&tmp->gpuVal);
+    fscanf(cgpm->fp,"%d",&tmp->elemCnt);
+    cgpm_alloc_elements(tmp);
+    for(j=0;j<tmp->elemCnt;j++)
+    {
+      CGPM_ELEMENT *element = &tmp->elem[j];
+      fscanf(cgpm->fp," %d %d %d %d %d",&element->ident,&element->isTryCpu,&element->isTryGpu,&element->cpuVal,&element->gpuVal);
+    }
   }
 }
 
 void cgpm_store_records()
 {
-  int i;
+  int i,j;
   int recordCnt = cgpm->recordCnt;
   
   cgpm->fp = fopen(cgpm_table_path,"w");
@@ -64,7 +70,12 @@ void cgpm_store_records()
   {
     CGPM_RECORD *tmp = &cgpm->records[i];
     fprintf(cgpm->fp,"%s\n",tmp->name);
-    fprintf(cgpm->fp,"%d %d %d %d\n",tmp->isTryCpu,tmp->isTryGpu,tmp->cpuVal,tmp->gpuVal);
+    fprintf(cgpm->fp,"%d\n",tmp->elemCnt);
+    for(j=0;j<tmp->elemCnt;j++)
+    {
+      CGPM_ELEMENt *element = &tmp->elem[j];
+      fprintf(cgpm->fp,"%d %d %d %d %d\n",element->isTryCpu,element->isTryGpu,element->cpuVal,element->gpuVal);
+    }
   }
   
   fclose(cgpm->fp);
@@ -74,6 +85,11 @@ void cgpm_alloc_records(int size)
 {
   cgpm->recordSize = size;
   cgpm->records = (CGPM_RECORD *)malloc(sizeof(CGPM_RECORD) * size);
+}
+
+void cgpm_alloc_elements(CGPM_RECORD *record)
+{
+  record->elem = (CGPM_ELEMENT *)malloc(sizeof(CGPM_ELEMENT) * record->elemCnt); 
 }
 
 void cgpm_realloc_records()
